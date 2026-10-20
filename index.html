@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>QK-NLP Lab</title>
+<style>
+:root{--bg:#f6f5f1;--card:#fff;--ink:#1c1b19;--mut:#6b6860;--line:#dedbd2;--acc:#2b5fd9;--acc-rgb:43,95,217;--ok:#1a7f4b;--on-acc:#fff;--hm-max:.75;color-scheme:light dark;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#131412;--card:#1d1e1b;--ink:#ecebe6;--mut:#9a978d;--line:#34352f;--acc:#7ea2ff;--acc-rgb:126,162,255;--ok:#5fd394;--on-acc:#0d0e0c;--hm-max:.55}}
+:root[data-theme="dark"]{--bg:#131412;--card:#1d1e1b;--ink:#ecebe6;--mut:#9a978d;--line:#34352f;--acc:#7ea2ff;--acc-rgb:126,162,255;--ok:#5fd394;--on-acc:#0d0e0c;--hm-max:.55;color-scheme:dark}
+:root[data-theme="light"]{color-scheme:light}
+html{scroll-padding-top:env(safe-area-inset-top,0px);-webkit-text-size-adjust:100%;text-size-adjust:100%}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:980px;margin:0 auto;padding:20px 16px 40px}
+h1{font-size:1.5rem;margin:0 0 4px;letter-spacing:-.01em}
+h2{font-size:.8rem;text-transform:uppercase;letter-spacing:.08em;color:var(--mut);margin:0 0 10px}
+.sub{color:var(--mut);margin:0 0 16px}
+.note{border-left:3px solid var(--acc);background:var(--card);padding:8px 12px;border-radius:0 8px 8px 0;margin-bottom:16px;font-size:.88rem;color:var(--mut)}
+.grid{display:grid;gap:14px;grid-template-columns:1fr 1fr}
+@media(max-width:720px){.grid{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:14px;min-width:0}
+.grid .card{margin-bottom:0}
+textarea{width:100%;min-height:64px;resize:vertical;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:8px;font:inherit}
+.ctl{display:flex;flex-wrap:wrap;gap:14px;align-items:end}
+label{display:flex;flex-direction:column;font-size:.8rem;color:var(--mut);gap:4px}
+select,input[type=number]{background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:6px 8px;font:inherit}
+input[type=range]{accent-color:var(--acc)}
+button{background:var(--acc);color:var(--on-acc);min-height:36px;border:0;border-radius:8px;padding:8px 14px;font:inherit;cursor:pointer}
+button:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+input:disabled{opacity:.4;cursor:not-allowed}label.off{opacity:.6}
+.hmw{width:100%;outline-offset:3px;border-radius:6px}
+.hm{display:grid;grid-template-columns:clamp(44px,17vw,100px) repeat(var(--n),minmax(0,1fr));gap:2px;width:100%;max-width:calc(var(--n)*76px + 100px);font-size:.75rem}
+.hm>div{min-width:0}
+.ch,.rh{color:var(--mut);display:flex;overflow:hidden;white-space:nowrap}
+.rh{justify-content:flex-end;align-items:center;padding-right:6px}
+.rh span{overflow:hidden;text-overflow:ellipsis}
+.ch{justify-content:center;align-items:flex-end;padding-bottom:4px}
+.ch span{overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.hmw.vert .ch{height:68px}
+.hmw.vert .ch span{writing-mode:vertical-rl;transform:rotate(180deg);max-height:64px;max-width:none}
+.c{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:3px;cursor:pointer;color:var(--ink);background:rgba(var(--acc-rgb),calc(var(--hm-max)*var(--w)));-webkit-tap-highlight-color:transparent}
+.c.sel{outline:2px solid var(--ink);outline-offset:-2px}
+.hmw.nonum .c{font-size:0}
+/* iOS Safari zooms the page on focus if a field is under 16px */
+select,input[type=number],textarea,button{font-size:16px;border-radius:8px;touch-action:manipulation}
+textarea,button{-webkit-appearance:none;appearance:none}
+.cap{margin:6px 0 0;font-size:.8rem;color:var(--mut);min-height:1.2em}
+@media (pointer:coarse),(max-width:600px){select,input[type=number],button{min-height:44px}input[type=range]{height:32px}}
+.big{font-size:2rem;font-weight:600;letter-spacing:-.02em}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;font-size:.88rem}
+.kv span:nth-child(odd){color:var(--mut)}
+.ok{color:var(--ok);font-weight:600}
+code{font-family:ui-monospace,Menlo,monospace;font-size:.85em}
+</style>
+</head>
+<body>
+<main>
+<h1>QK-NLP Lab</h1>
+<p class="sub">Quaternionic embeddings + metric-based attention, running live in your browser.</p>
+<div class="note">Weights are random and untrained, so similarity scores show the geometry at work, not learned meaning. Words that are shared between sentences get identical embeddings, which is what drives the similarity number.</div>
+
+<div class="card">
+<h2>Controls</h2>
+<div class="ctl">
+<label>Metric<select id="metric"><option value="euclidean">Euclidean</option><option value="spherical">Spherical</option><option value="hyperbolic">Hyperbolic</option></select></label>
+<label id="klab">Curvature κ: <b id="kv">1.0</b><input id="kappa" type="range" min="0.1" max="3" step="0.1" value="1"></label>
+<label>Quaternion channels C<select id="C"><option>4</option><option selected>8</option><option>16</option></select></label>
+<label>Seed<input id="seed" type="number" value="42" style="width:90px"></label>
+</div>
+</div>
+
+<div class="grid">
+<div class="card"><h2>Sentence A</h2><textarea id="a" aria-label="Sentence A">the quaternion rotates the word vector</textarea></div>
+<div class="card"><h2>Sentence B</h2><textarea id="b" aria-label="Sentence B">the word vector rotates in four dimensions</textarea></div>
+</div>
+
+<div class="card" style="margin-top:14px"><h2>Attention weights: sentence A</h2><div class="hmw" id="hmA"></div><p class="cap" id="roA" aria-live="polite"></p><p class="cap" id="capA" aria-live="polite"></p></div>
+<div class="card"><h2>Attention weights: sentence B</h2><div class="hmw" id="hmB"></div><p class="cap" id="roB" aria-live="polite"></p><p class="cap" id="capB" aria-live="polite"></p></div>
+
+<div class="grid">
+<div class="card"><h2>Sentence similarity</h2><div class="big" id="sim" aria-live="polite">–</div><div style="color:var(--mut);font-size:.85rem">Cosine of mean-pooled outputs (A vs B)</div></div>
+<div class="card"><h2>Rotation test</h2>
+<div class="kv"><span>Random rotation r</span><span id="rq"></span>
+<span>Max score change</span><span id="d1"></span>
+<span>Max |f(rx) − r·f(x)|</span><span id="d2"></span></div>
+<div style="color:var(--mut);font-size:.82rem;margin-top:6px">Left-multiplying every token by a unit quaternion <code>r</code> leaves attention scores unchanged and rotates the outputs, because weights multiply on the right.</div></div>
+</div>
+
+<div class="card" style="margin-top:14px"><h2>Parameters (Q, K, V projections)</h2>
+<div class="kv"><span>Quaternion linear (3 × 4C²)</span><span id="pq"></span>
+<span>Real linear, same width (3 × 16C²)</span><span id="pr"></span>
+<span>Ratio</span><span id="pt"></span></div>
+<div style="color:var(--mut);font-size:.82rem;margin-top:6px">Weight sharing in the Hamilton product gives 4× fewer parameters per linear layer at equal width. This is not the blanket "50%" in the repo READMEs.</div></div>
+</main>
+
+<script>
+(function(){
+"use strict";
+var $=function(id){return document.getElementById(id)};
+function hash(s){var h=2166136261;for(var i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return h>>>0}
+function rng(seed){var a=seed>>>0;return function(){a=(a+0x6D2B79F5)|0;var t=Math.imul(a^(a>>>15),1|a);t=(t+Math.imul(t^(t>>>7),61|t))^t;return((t^(t>>>14))>>>0)/4294967296}}
+function gauss(r){return Math.sqrt(-2*Math.log(r()+1e-12))*Math.cos(2*Math.PI*r())}
+function tok(s){return s.toLowerCase().match(/[\p{L}\p{N}']+/gu)||[]}
+var MAXT=16;
+function qmul(a,ai,b,bi,o,oi){ // o += a*b (Hamilton)
+ var a0=a[ai],a1=a[ai+1],a2=a[ai+2],a3=a[ai+3],b0=b[bi],b1=b[bi+1],b2=b[bi+2],b3=b[bi+3];
+ o[oi]+=a0*b0-a1*b1-a2*b2-a3*b3;
+ o[oi+1]+=a0*b1+a1*b0+a2*b3-a3*b2;
+ o[oi+2]+=a0*b2-a1*b3+a2*b0+a3*b1;
+ o[oi+3]+=a0*b3+a1*b2-a2*b1+a3*b0}
+function embed(w,C,seed){var r=rng(hash(w)^Math.imul(seed+1,2654435761)),v=new Float64Array(4*C);for(var i=0;i<v.length;i++)v[i]=gauss(r)*.5;return v}
+function weights(n,C,seed){var r=rng(hash(n)^Math.imul(seed+7,2246822519)),w=new Float64Array(4*C*C),s=.5/Math.sqrt(C);for(var i=0;i<w.length;i++)w[i]=gauss(r)*s;return w}
+function lin(x,W,C){ // out_j = sum_i x_i * W_ji  (right multiplication)
+ var o=new Float64Array(4*C);
+ for(var j=0;j<C;j++)for(var i=0;i<C;i++)qmul(x,4*i,W,4*(j*C+i),o,4*j);
+ return o}
+function score(q,k,C,m,kap){
+ if(m==="euclidean"){var s=0;for(var i=0;i<4*C;i++)s+=q[i]*k[i];return s/Math.sqrt(4*C)}
+ var t=0;
+ for(var c=0;c<C;c++){var o=4*c,nq=0,nk=0,dot=0,dd=0,d;
+  for(var e=0;e<4;e++){nq+=q[o+e]*q[o+e];nk+=k[o+e]*k[o+e];dot+=q[o+e]*k[o+e]}
+  nq=Math.sqrt(nq)+1e-9;nk=Math.sqrt(nk)+1e-9;
+  if(m==="spherical"){d=Math.acos(Math.max(-1,Math.min(1,dot/(nq*nk))))}
+  else{ // Poincare ball: u = q/|q| * tanh(sqrt(kap)|q|)
+   var sq=Math.tanh(Math.sqrt(kap)*nq)/nq,sk=Math.tanh(Math.sqrt(kap)*nk)/nk,uu=0,vv=0;
+   for(var e2=0;e2<4;e2++){var u=q[o+e2]*sq,v=k[o+e2]*sk;dd+=(u-v)*(u-v);uu+=u*u;vv+=v*v}
+   d=Math.acosh(1+2*dd/(Math.max(1e-9,1-uu)*Math.max(1e-9,1-vv)))}
+  t+=d*d}
+ return -(m==="spherical"?kap:1)*t/Math.sqrt(C)}
+function run(X,P){
+ var n=X.length,C=P.C,Q=X.map(function(x){return lin(x,P.Wq,C)}),K=X.map(function(x){return lin(x,P.Wk,C)}),V=X.map(function(x){return lin(x,P.Wv,C)});
+ var S=[],A=[],Y=[];
+ for(var t=0;t<n;t++){var row=[],mx=-1e9;
+  for(var u=0;u<n;u++){var s=score(Q[t],K[u],C,P.m,P.kap);row.push(s);if(s>mx)mx=s}
+  S.push(row);var e=row.map(function(s){return Math.exp(s-mx)}),z=e.reduce(function(a,b){return a+b},0);
+  A.push(e.map(function(v){return v/z}));
+  var y=Float64Array.from(X[t]);for(u=0;u<n;u++)for(var d=0;d<4*C;d++)y[d]+=A[t][u]*V[u][d];Y.push(y)}
+ return{S:S,A:A,Y:Y}}
+function pool(Y,C){var m=new Float64Array(4*C);Y.forEach(function(y){for(var i=0;i<m.length;i++)m[i]+=y[i]/Y.length});return m}
+function cos(a,b){var d=0,x=0,y=0;for(var i=0;i<a.length;i++){d+=a[i]*b[i];x+=a[i]*a[i];y+=b[i]*b[i]}return d/(Math.sqrt(x*y)+1e-12)}
+function esc(t){return t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}
+var HM={};
+function fit(el){var c=el.querySelector(".c");if(!c)return;var w=c.getBoundingClientRect().width;
+ el.classList.toggle("nonum",w<30);el.classList.toggle("vert",w<46)}
+function pick(el,i,j){var d=HM[el.id];if(!d)return;var n=d.t.length;i=Math.max(0,Math.min(n-1,i));j=Math.max(0,Math.min(n-1,j));d.i=i;d.j=j;
+ var o=el.querySelector(".sel");if(o)o.classList.remove("sel");
+ var c=el.querySelector('.c[data-i="'+i+'"][data-j="'+j+'"]');if(c)c.classList.add("sel");
+ d.ro.textContent="query \u201c"+d.t[i]+"\u201d \u2192 key \u201c"+d.t[j]+"\u201d: "+d.A[i][j].toFixed(3)+" (row sums to 1)"}
+function heat(el,toks,A,ro){
+ var n=toks.length;
+ if(!n){el.className="hmw";el.textContent="Type some words.";ro.textContent="";HM[el.id]=null;return}
+ var mx=0;A.forEach(function(r){r.forEach(function(v){if(v>mx)mx=v})});
+ var prev=HM[el.id],i0=prev?prev.i:0,j0=prev?prev.j:0;
+ HM[el.id]={t:toks,A:A,i:i0,j:j0,ro:ro};
+ el.tabIndex=0;el.setAttribute("aria-label","Attention matrix. Arrow keys inspect cells.");
+ var h="<div class='hm' style='--n:"+n+"'><div></div>";
+ toks.forEach(function(t){h+="<div class='ch' title=\""+esc(t)+"\"><span>"+esc(t)+"</span></div>"});
+ for(var i=0;i<n;i++){h+="<div class='rh' title=\""+esc(toks[i])+"\"><span>"+esc(toks[i])+"</span></div>";
+  for(var j=0;j<n;j++){var v=A[i][j];h+="<div class='c' data-i='"+i+"' data-j='"+j+"' style='--w:"+(mx>0?v/mx:0).toFixed(2)+"'>"+(v>=0.995?"1":v.toFixed(2).slice(1))+"</div>"}}
+ el.innerHTML=h+"</div>";
+ if(!el._wired){el._wired=1;
+  el.addEventListener("click",function(e){var c=e.target.closest&&e.target.closest(".c");if(c)pick(el,+c.dataset.i,+c.dataset.j)});
+  el.addEventListener("keydown",function(e){var d=HM[el.id];if(!d)return;var m={ArrowUp:[-1,0],ArrowDown:[1,0],ArrowLeft:[0,-1],ArrowRight:[0,1]}[e.key];if(m){e.preventDefault();pick(el,d.i+m[0],d.j+m[1])}});
+  if(window.ResizeObserver)new ResizeObserver(function(){fit(el)}).observe(el);else window.addEventListener("resize",function(){fit(el)})}
+ el.classList.remove("vert");el.classList.remove("nonum");el.classList.add("hmw");fit(el);pick(el,i0,j0)}
+function rot(){var r=[0,0,0,0].map(function(){return gauss(Math.random)}),n=Math.hypot.apply(null,r);return Float64Array.from(r.map(function(x){return x/n}))}
+function update(){
+ var C=+$("C").value,seed=+$("seed").value||0,kap=+$("kappa").value,m=$("metric").value;
+ var eu=m==="euclidean";$("kappa").disabled=eu;$("klab").className=eu?"off":"";$("kv").textContent=eu?"n/a (Euclidean)":kap.toFixed(1);
+ var P={C:C,m:m,kap:kap,Wq:weights("q",C,seed),Wk:weights("k",C,seed),Wv:weights("v",C,seed)};
+ var ta0=tok($("a").value),tb0=tok($("b").value),ta=ta0.slice(0,MAXT),tb=tb0.slice(0,MAXT);
+ $("capA").textContent=ta0.length>MAXT?"Showing the first "+MAXT+" of "+ta0.length+" words.":"";
+ $("capB").textContent=tb0.length>MAXT?"Showing the first "+MAXT+" of "+tb0.length+" words.":"";
+ var XA=ta.map(function(w){return embed(w,C,seed)}),XB=tb.map(function(w){return embed(w,C,seed)});
+ var RA=run(XA,P),RB=run(XB,P);
+ heat($("hmA"),ta,RA.A,$("roA"));heat($("hmB"),tb,RB.A,$("roB"));
+ $("sim").textContent=(ta.length&&tb.length)?cos(pool(RA.Y,C),pool(RB.Y,C)).toFixed(3):"–";
+ // rotation test on sentence A
+ if(ta.length){
+  var r=rot(),Xr=XA.map(function(x){var o=new Float64Array(4*C);for(var c=0;c<C;c++)qmul(r,0,x,4*c,o,4*c);return o}),R2=run(Xr,P),d1=0,d2=0;
+  for(var i=0;i<ta.length;i++){for(var j=0;j<ta.length;j++)d1=Math.max(d1,Math.abs(RA.S[i][j]-R2.S[i][j]));
+   var ry=new Float64Array(4*C);for(var c2=0;c2<C;c2++)qmul(r,0,RA.Y[i],4*c2,ry,4*c2);
+   for(var d=0;d<4*C;d++)d2=Math.max(d2,Math.abs(ry[d]-R2.Y[i][d]))}
+  $("rq").textContent="["+Array.from(r).map(function(x){return x.toFixed(2)}).join(", ")+"]";
+  $("d1").innerHTML="<span class='ok'>"+d1.toExponential(1)+"</span>";
+  $("d2").innerHTML="<span class='ok'>"+d2.toExponential(1)+"</span>"}
+ else{$("rq").textContent="–";$("d1").textContent="–";$("d2").textContent="–"}
+ var pq=3*4*C*C,pr=3*16*C*C;
+ $("pq").textContent=pq.toLocaleString();$("pr").textContent=pr.toLocaleString();$("pt").textContent=(pr/pq).toFixed(1)+"× fewer"}
+["a","b"].forEach(function(id){$(id).addEventListener("input",update)});
+["metric","kappa","C","seed"].forEach(function(id){$(id).addEventListener("input",update)});
+update();
+})();
+</script>
+</body>
+</html>
